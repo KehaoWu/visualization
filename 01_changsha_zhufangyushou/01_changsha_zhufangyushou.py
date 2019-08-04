@@ -6,7 +6,7 @@ import pandas as pd
 from pyecharts import options as opts
 from pyecharts.charts import PictorialBar
 from pyecharts.charts import Line
-from pyecharts.charts import Geo
+from pyecharts.charts import Bar
 import configparser
 import folium
 from folium import plugins
@@ -174,13 +174,34 @@ def stat_area_trend():
     chart.set_global_opts(
             title_opts=opts.TitleOpts(title="长沙预售房屋面积变化趋势", subtitle="统计日期:{}至{}，数据来源：{}".format(
                 min_date, max_date, DATA_SOURCE)),
-            legend_opts=opts.LegendOpts(is_show=False),
+            legend_opts=opts.LegendOpts(is_show=True),
             toolbox_opts=opts.ToolboxOpts(is_show=True)
         )
 
     filename = os.path.join(
         '..', 'assets', '01_changsha_zhufangyushou_面积趋势.html')
     chart.render(filename)
+
+
+@begin.subcommand
+def stat_other():
+    df = load_data()
+    df['住宅面积/层'] = df['住宅面积'] / df['层数']
+    df['住宅面积/套'] = df['住宅面积'] / df['住宅套数']
+    print("查看底层建筑分布情况")
+    df_low = df[df['层数']<=4]
+    summary_low = df_low[['住宅面积', '住宅面积/层']].describe()
+    print(df_low['住宅套数'].sum())
+    print(summary_low)
+    summary = df[['住宅面积', '住宅面积/层']].describe()
+    print(summary)
+    df_high = df[df['层数'] <= 34]
+    df_high = df_high[df_high['层数'] >= 34]
+    print(df_high[['住宅面积', '住宅面积/层', '住宅面积/套']].describe())
+
+    print(df[df['项目名称'] == '军民融合科技城']['住宅面积'])
+
+    print(df[df['lat'] == 28.35704]['住宅面积'])
 
 
 @begin.subcommand
